@@ -1,94 +1,145 @@
----
+## 📊 Credit Scoring Model – Loan Default Classification
 
-## ⚙️ Modeling Workflow
-
-Our machine learning pipeline for predicting BNPL loan defaults follows a clean and structured workflow:
+This project aims to develop and evaluate machine learning models to predict the probability of loan default based on customer-level credit data. The analysis was performed as part of a Financial Data Analytics (FDA) course project, using a cleaned dataset sourced from [Kaggle](https://www.kaggle.com/datasets/parisrohan/credit-score-classification/data).
 
 ---
 
-### 1. 🧹 Data Preprocessing
+## 📁 Dataset Overview
 
-* **Data Source**: We used the `Credit Score Classification` dataset, which includes both **traditional financial variables** (e.g., income, age, debt) and **behavioral indicators** (e.g., credit inquiries, payment patterns).
-* **Steps Taken**:
+The dataset used for this project includes several borrower-level features like:
 
-  * Loaded the data using `pandas.read_csv()`
-  * Checked for **missing values** and removed incomplete rows using `dropna()`
-  * Applied **label encoding** to convert categorical variables into numeric format using `LabelEncoder` from `sklearn.preprocessing`
-  * Ensured all features were numeric and suitable for model training
+* Personal and demographic information
+* Financial indicators (Income, Monthly Balance, etc.)
+* Credit behavior data (Outstanding Debt, Credit Mix, Credit History, etc.)
+* Credit score class (target variable: **Good**, **Standard**, or **Poor**)
 
-> This preprocessing step ensures that our ML models receive clean, structured, and numerical data.
-
----
-
-### 2. 🧪 Feature Engineering
-
-* We examined all features and retained only those with predictive relevance.
-* Converted categorical features to numeric, where necessary.
-* No synthetic features were added, but we ensured that:
-
-  * **Credit mix**, **payment behavior**, and **current loan activity** were preserved
-  * Class labels (0 = low risk, 1 = medium risk, 2 = high risk) were encoded correctly
+> The dataset was first cleaned externally and then imported as `cleaned_dataset.csv`.
 
 ---
 
-### 3. 📊 Data Splitting
+## 🔍 1. Exploratory Data Analysis (EDA)
 
-* We split the dataset using an 80:20 **train-test split** to evaluate model generalization.
-* This was done using:
+The notebook begins with a thorough EDA to understand the structure, content, and integrity of the data.
 
-  ```python
-  from sklearn.model_selection import train_test_split
-  X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-  ```
+Key tasks:
 
-> A fixed random state ensures reproducibility of our results.
+* Checked missing values and class distributions
+* Used **Seaborn** and **Matplotlib** for visual insights
+* Identified outliers and feature distributions
+* Reviewed correlations and feature importance based on intuition and visuals
 
----
+EDA revealed:
 
-### 4. 🤖 Model Training
-
-We trained and tested **six models** using Scikit-learn and specialized libraries:
-
-| Model                 | Description                                                             |
-| --------------------- | ----------------------------------------------------------------------- |
-| **Random Forest**     | Tree-based ensemble method with good performance on tabular data        |
-| **XGBoost**           | Gradient boosting algorithm optimized for speed and accuracy            |
-| **LightGBM**          | Faster gradient boosting using histogram-based approach                 |
-| **CatBoost**          | Handles categorical variables efficiently; robust with default settings |
-| **Stacked (2-model)** | Combines Random Forest + CatBoost                                       |
-| **Stacked (3-model)** | Combines Random Forest + LightGBM + CatBoost                            |
-
-Model stacking was implemented using:
-
-```python
-from sklearn.ensemble import StackingClassifier
-```
+* Class imbalance across the credit score categories
+* Presence of potential outliers in numerical variables
+* Importance of engineered features like `Credit Mix`, `Credit History`, and `Outstanding Debt`
 
 ---
 
-### 5. 📈 Evaluation Metrics
+## 🧪 2. Preprocessing
 
-To evaluate model performance, we used:
+We conducted several preprocessing steps to make the data suitable for modeling:
 
-* **Accuracy** – Overall correctness
-* **F1 Score (Weighted)** – Balance between precision and recall across all classes
-* **AUC-ROC** – How well the model separates classes (especially Class 2: high-risk)
-
-Best result came from the **3-model stacked ensemble**:
-
-* **Accuracy**: 79.1%
-* **F1 Score**: 79.1%
-* **AUC-ROC**: 91.5%
-
-> These metrics reflect strong generalization and precise high-risk borrower detection.
+* **Label Encoding** for categorical variables like `Credit Mix`, `Payment of Minimum Amount`, and `Occupation`
+* **Standardization** of numerical features using `StandardScaler`
+* Addressed **class imbalance** using **SMOTE** (Synthetic Minority Oversampling Technique)
+* Ensured that transformed data retained interpretability and balanced class distributions
 
 ---
 
-### 6. 🔍 Key Insights from Modeling
+## 🏗️ 3. Model Development
 
-* Our stacked model achieved **80% recall** for high-risk users (Class 2), helping minimize default-related losses.
-* Affirm’s real-life practice of using **ensemble models** for credit scoring was mirrored effectively.
-* The model also showed conservative behavior toward low-risk users — a trade-off between safety and opportunity.
+The project builds and compares a range of classification models:
+
+### ✅ Baseline Models
+
+* **Logistic Regression**
+* **Decision Tree Classifier**
+* **Random Forest Classifier**
+* **Naive Bayes**
+
+### ✅ Advanced Ensemble Models
+
+* **XGBoost**
+* **CatBoost**
+* **LightGBM**
+* **Gradient Boosting**
+
+Each model was trained using stratified training/testing splits and evaluated using:
+
+* **Accuracy**
+* **F1-Score**
+* **Confusion Matrix**
+* **Classification Report**
+
+---
+
+## 🧠 4. Feature Engineering and Outlier Handling
+
+The team conducted iterations to improve model performance:
+
+* **Feature Engineering**: Derived new features such as:
+
+  * Ratio-based features (e.g., Monthly Balance vs. Income)
+  * Combined indicators (e.g., Credit Mix + Payment Behavior)
+* **Outlier Removal**: Used IQR-based filtering to remove extreme values in key numerical features
+
+These iterations led to significant improvements in model generalizability and F1-scores.
+
+---
+
+## 🔁 5. Model Comparison & Results
+
+Three separate modeling strategies were compared:
+
+1. **Baseline**: Raw features without modifications
+2. **Feature Engineered Model**: With added composite features
+3. **Outlier Removed Model**: Cleaned outliers before modeling
+
+Model with **feature engineering and SMOTE balancing** yielded the best results, with the **CatBoost** and **XGBoost classifiers** achieving:
+
+* **F1-Score**: \~0.94 on test set
+* **Improved precision and recall** across all three credit classes
+
+A detailed comparison table and confusion matrix plots were included to justify the model selection.
+
+---
+
+## 📈 6. Performance Visualization
+
+The notebook includes multiple visualizations for interpretability:
+
+* Confusion Matrices (Seaborn heatmaps)
+* F1-score comparisons across models
+* Precision and recall breakdown
+* Class-wise model performance visualization
+
+---
+
+## 📌 Key Takeaways
+
+* **Class imbalance and feature scale issues** significantly affect model performance; addressing them using **SMOTE** and **standardization** is essential.
+* **Tree-based ensemble models** (CatBoost, XGBoost, LightGBM) outperformed simpler classifiers.
+* **Feature engineering** improved the model’s capacity to distinguish nuanced borrower behaviors.
+
+---
+
+## 🛠️ Tools & Libraries
+
+* Python
+* Google Colab
+* Pandas, Numpy
+* Scikit-learn
+* Matplotlib, Seaborn
+* SMOTE (Imbalanced-learn)
+* CatBoost, XGBoost, LightGBM
+
+---
+
+## 🧑‍💻 Authors
+
+* Group 7 – Financial Data Analytics (FDA)
+* Course Project (Spring 2025)
 
 ---
 
